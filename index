@@ -96,9 +96,9 @@
 </head>
 <body>
 
-<!-- IMAGEN DE BANNER SIN MÁRGENES -->
 <div class="banner-contenedor">
-    <img src="biblio.jpg" alt="Mural Biblioteca Central UNAM">
+    <!-- Verifica que el nombre sea biblio.jpg exactamente -->
+    <img src="biblio.jpg" alt="Mural Biblioteca Central UNAM" onerror="this.src='https://via.placeholder.com/1200x300?text=Error+al+cargar+imagen+biblio.jpg'">
 </div>
 
 <!-- TÍTULO DEL SISTEMA -->
