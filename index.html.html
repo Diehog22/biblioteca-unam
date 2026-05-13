@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Acervo Digital - UNAM</title>
+    <style>
+        :root { --unam-azul: #003b5c; --unam-oro: #fdbb30; }
+        body { margin: 0; font-family: 'Arial', sans-serif; background-color: #cbd5e0; }
+        .header { background: var(--unam-azul); color: var(--unam-oro); padding: 30px; text-align: center; border-bottom: 5px solid var(--unam-oro); font-size: 24px; font-weight: bold; }
+        .container { max-width: 950px; margin: 30px auto; background: white; padding: 25px; border: 1px solid #999; box-shadow: 8px 8px 0px rgba(0,0,0,0.1); }
+        .search-box { background: #f3f4f6; padding: 20px; display: flex; gap: 10px; border: 1px solid #ddd; margin-bottom: 20px; }
+        input { flex-grow: 1; padding: 12px; border: 1px solid var(--unam-azul); font-size: 16px; }
+        button { background: var(--unam-azul); color: var(--unam-oro); border: 2px solid var(--unam-oro); padding: 10px 25px; cursor: pointer; font-weight: bold; }
+        #status { text-align: center; font-weight: bold; margin-bottom: 15px; }
+        
+        /* Estilo Tabla imagen_2.png */
+        table { width: 100%; border-collapse: collapse; background: #d1d5db; display: none; margin-top: 20px; }
+        th { background: #fef3c7; border: 1px solid #999; padding: 12px; font-size: 13px; color: black; }
+        td { border: 1px solid #999; padding: 10px; text-align: center; color: #b91c1c; font-weight: bold; font-size: 14px; }
+        tr:nth-child(even) { background: #c5cad3; }
+    </style>
+</head>
+<body>
+
+<div class="header">SISTEMA DE CONSULTA DE ACERVO - UNAM</div>
+
+<div class="container">
+    <div class="search-box">
+        <input type="text" id="busqueda" placeholder="Buscar por título, autor o tema...">
+        <button onclick="buscar()">BUSCAR</button>
+    </div>
+
+    <div id="status">Cargando base de datos...</div>
+
+    <table id="tablaLibros">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>LIBRO / TÍTULO</th>
+                <th>AUTOR</th>
+                <th>AÑO</th>
+                <th>TOTAL</th>
+                <th>DISPONIBLES</th>
+            </tr>
+        </thead>
+        <tbody id="resultadoBody"></tbody>
+    </table>
+</div>
+
+<script>
+    // Tu URL de Google Sheets de imagen_3.png
+    const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRxvn_OzvmwzYPuzfVCVgviDoVVMQkm75FwkiYPelVZkwh4sKMyFVevJsJXLuKNGCsZaDCM9V0WkK36/pub?output=csv';
+    let baseDeDatos = [];
+
+    async function cargarBiblioteca() {
+        const status = document.getElementById('status');
+        try {
+            // En GitHub, esta petición fetch SÍ funcionará sin errores
+            const response = await fetch(csvUrl);
+            const data = await response.text();
+            
+            const filas = data.split("\n").slice(1);
+            baseDeDatos = filas.map(f => {
+                const c = f.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
+                return { id: c[0], titulo: c[1], autor: c[2], anio: c[3], total: c[4], disp: c[5] };
+            }).filter(l => l.titulo);
+
+            status.innerText = "✅ CONEXIÓN EXITOSA CON EL ACERVO";
+            status.style.color = "green";
+        } catch (e) {
+            status.innerText = "❌ ERROR DE CONEXIÓN";
+            status.style.color = "red";
+        }
+    }
+
+    function buscar() {
+        const txt = document.getElementById('busqueda').value.toLowerCase();
+        const tabla = document.getElementById('tablaLibros');
+        const cuerpo = document.getElementById('resultadoBody');
+        
+        const filtrados = baseDeDatos.filter(l => 
+            l.titulo.toLowerCase().includes(txt) || 
+            l.autor.toLowerCase().includes(txt)
+        );
+
+        cuerpo.innerHTML = "";
+        if (filtrados.length > 0) {
+            tabla.style.display = "table";
+            filtrados.forEach(l => {
+                cuerpo.innerHTML += `<tr>
+                    <td>${l.id}</td>
+                    <td>${l.titulo}</td>
+                    <td>${l.autor}</td>
+                    <td>${l.anio}</td>
+                    <td>${l.total}</td>
+                    <td>${l.disp}</td>
+                </tr>`;
+            });
+        } else {
+            alert("No se encontraron libros con ese nombre.");
+        }
+    }
+
+    window.onload = cargarBiblioteca;
+</script>
+
+</body>
+</html>
